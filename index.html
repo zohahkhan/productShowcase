@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafd; /* Very light blue/grey */
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #0056b3;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .product-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .product-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+        .product-card img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .product-card h3 {
+            font-size: 1.5em;
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+        .product-card p.description {
+            font-size: 0.9em;
+            color: #666;
+            min-height: 40px;
+            margin-bottom: 10px;
+        }
+        .product-card .price {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2CA58D; /* Teal */
+            margin-bottom: 15px;
+        }
+        .product-card .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .product-card button {
+            background-color: #2CA58D; /* Teal */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+            flex-grow: 1;
+        }
+        .product-card button.remove-btn {
+            background-color: #dc3545; /* Red */
+        }
+        .product-card button:hover:not(:disabled) {
+            background-color: #1f7a6a; /* Darker Teal */
+        }
+        .product-card button.remove-btn:hover:not(:disabled) {
+            background-color: #c82333; /* Darker Red */
+        }
+        .product-card button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .status-message-box {
+            background-color: #e6f7ff; /* Lighter blue */
+            border: 1px solid #91d5ff;
+            color: #0056b3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Dynamic CSS Classes --- */
+        .product-card.out-of-stock {
+            opacity: 0.6;
+            filter: grayscale(80%);
+            border-color: #dc3545; /* Red */
+        }
+        .product-card.featured {
+            border: 3px solid #ffc107; /* Yellow for featured */
+            box-shadow: 0 0 15px rgba(255,193,7,0.5);
+        }
+        .sold-out-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            font-size: 1.8em;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            z-index: 10;
+            display: none; /* Hidden by default */
+        }
+        .product-card.out-of-stock .sold-out-overlay {
+            display: flex; /* Show when out of stock */
+        }
+
+        .controls {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        .controls button {
+            background-color: #53A2BE; /* Medium Blue */
+            min-width: 180px;
+        }
+        .controls button:hover {
+            background-color: #3b8aa6;
+        }
+
+        #recentlyViewedContainer {
+            min-height: 150px;
+            border: 2px dashed #0056b3;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .recently-viewed-item {
+            background-color: #ADD8E6;
+            border: 1px solid #87CEEB;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+            max-width: 120px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .recently-viewed-item img {
+            max-width: 80px;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Showcase</h1>
+
+        <div class="controls">
+            <button id="updateLaptopBtn">Update "Laptop Pro X"</button>
+            <button id="markHeadphonesOutOfStockBtn">Mark "Headphones" Out of Stock</button>
+            <button id="highlightFeaturedBtn">Highlight Featured Products</button>
+            <button id="showProductDataBtn">Show All Product Data</button>
+            <button id="addRandomProductBtn">Add Random Product to History</button>
+        </div>
+
+        <div class="product-grid">
+            <!-- Product Card 1: Laptop Pro X -->
+            <div class="product-card" id="laptopProX" data-product-id="P001" data-stock-level="15" data-is-featured="true">
+                <div class="sold-out-overlay">SOLD OUT</div>
+                <img src="https://placehold.co/150x150/53A2BE/FFFFFF?text=Laptop" alt="Laptop Pro X Image">
+                <h3 id="laptopName">Laptop Pro X</h3>
+                <p class="description" id="laptopDescription">A powerful and sleek laptop for professionals.</p>
+                <p class="price" id="laptopPrice">$1200.00</p>
+                <div class="button-group">
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                    <button class="remove-card-btn">Remove Card</button>
+                </div>
+            </div>
+
+            <!-- Product Card 2: Wireless Headphones -->
+            <div class="product-card" id="wirelessHeadphones" data-product-id="P002" data-stock-level="0" data-is-featured="false">
+                <div class="sold-out-overlay">SOLD OUT</div>
+                <img src="https://placehold.co/150x150/84BC9C/0A2342?text=Headphones" alt="Wireless Headphones Image">
+                <h3 id="headphonesName">Wireless Headphones</h3>
+                <p class="description" id="headphonesDescription">Immersive audio with noise cancellation.</p>
+                <p class="price" id="headphonesPrice">$199.99</p>
+                <div class="button-group">
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                    <button class="remove-card-btn">Remove Card</button>
+                </div>
+            </div>
+
+            <!-- Product Card 3: Smartwatch Elite -->
+            <div class="product-card" id="smartwatchElite" data-product-id="P003" data-stock-level="50" data-is-featured="true">
+                <div class="sold-out-overlay">SOLD OUT</div>
+                <img src="https://placehold.co/150x150/2CA58D/FFFFFF?text=Smartwatch" alt="Smartwatch Elite Image">
+                <h3 id="smartwatchName">Smartwatch Elite</h3>
+                <p class="description" id="smartwatchDescription">Track your fitness and stay connected.</p>
+                <p class="price" id="smartwatchPrice">$249.00</p>
+                <div class="button-group">
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                    <button class="remove-card-btn">Remove Card</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-message-box" id="statusMessageBox">Perform an action to see updates!</div>
+
+        <h2>Recently Viewed Products</h2>
+        <div id="recentlyViewedContainer">
+            <p style="color: #666;">No items viewed recently. Add some!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
